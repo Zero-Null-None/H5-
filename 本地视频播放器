@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<meta charset=gb2312" />
+<title>�Զ��岥����</title>
+<div>
+	<div>
+    	<input type="file" id="file" onchange="onInputFileChange()">
+    </div>
+	<div><video id="video"  loop="true"   width="900"></vdeio></div>
+	<div id="progressTime" style="display:none">
+		<div style="float:left">
+		<progress id="progress" max="100" style="width:800px">
+		</progress>
+		</div>
+		<div id="showTime" style="float:left;margin-left:15px"></div>
+		<div style="clear:both"></div>
+	</div>
+</div>
+        
+		<input type="button" id ="btnPlay"   onclick="playOrPause()"   value="Play"/> 
+		<input type="button" id="btnSpeedUp" onclick="speedUp()"       value="Speed Up" /> 
+		<input type="button" id="btnSpeedUpDown" onclick="speedDown()" value="Speed Down" /> 
+		<input type="button" id="bthMute"  onclick="mute()"        value="Mute" />
+	</div>
+</div>
+
+<div>
+	<table width='100%'>
+		<tr>
+			<td width='20%'>Setspeed</td>
+			<td width='40%'>
+				<select id="sspeed">	
+                	<option value="1.0">1.0</option>				
+					<option value="1.25">1.25</option>
+                    <option value="1.5">1.5</option>
+                    <option value="2.0">2.0</option>			
+                    <option value="0.75">0.75</option>
+                    <option value="0.5">0.5</option>                  
+				</select>
+			</td>
+			<td width='20%'>&nbsp;</td>
+		</tr>
+      
+	</table>
+    <input type="button" id ="setSpeed"   onclick="setspeed()"   value="set"/>        
+</div>
+
+
+<script>
+var speed=1; //�����ٶ�
+var volume=1; //��������
+
+var video=document.getElementById("video");
+var playBtn=document.getElementById("btnPlay");
+var btnSpeedUp=document.getElementById("btnSpeedUp");
+var btnSpeedUpDown=document.getElementById("btnSpeedUpDown");
+var btnVolumeUp=document.getElementById("btnVolumeUp");
+var btnVolumeDown=document.getElementById("btnVolumeDown");
+var showTime=document.getElementById("showTime");
+var bthMute=document.getElementById("bthMute")
+
+video.addEventListener('timeupdate',updateProgress,false); //Ϊ����������ʱ��ı�����¼�
+var progress=document.getElementById("progress");
+progress.onclick=progressOnClick; //Ϊprogress�ؼ����ӵ���¼�
+
+//
+function onInputFileChange() {
+	var file = document.getElementById('file').files[0];
+	var url = URL.createObjectURL(file);
+console.log(url);
+	document.getElementById("video").src = url;
+}
+
+//���Ż���ͣ
+function playOrPause()
+{
+	var progressTime=document.getElementById("progressTime");
+	progressTime.style.display=""; //��ʾ���Ž�������ʱ��
+	if(video.paused) //�����ǰ����״̬Ϊ��ͣ�������ʼ����
+	{
+		playBtn.value="Pause";
+		video.play();
+		video.playbackRate=speed;
+		video.volume=volume;
+		//���ÿ��ƹ�����������ť
+		btnSpeedUp.disabled="";
+		btnSpeedUpDown.disabled="";
+		//btnVolumeUp.disabled="";
+		//btnVolumeDown.disabled="";
+	}
+	else //�����ǰ����״̬Ϊ���ţ��������ͣ����
+	{
+		playBtn.value="Play";
+		video.pause();
+		//���ÿ�����������ť
+		btnSpeedUp.disabled="disabled";
+		btnSpeedUpDown.disabled="disabled";
+		//btnVolumeUp.disabled="disabled";
+		//btnVolumeDown.disabled="disabled";
+	}	
+}
+
+
+//��߲����ٶ�
+function speedUp()
+{
+	video.playbackRate+=0.25;
+	speed=video.playbackRate;
+}
+//���Ͳ����ٶ�
+function speedDown()
+{
+	video.playbackRate-=0.25;
+	if(video.playbackRate<0)
+	{
+		video.playbackRate=0;	
+	}
+	speed=video.playbackRate;
+}
+
+//����
+function mute()
+{
+	if(video.volume>0)
+	{
+     bthMute.value="Muted";
+     video.volume=0;
+	 video.muted=true;
+	 }
+     else if(video.volume==0)
+     {
+     video.volume=1;;
+     video.muted=false;
+     }
+	volume=video.volume;
+}
+//���Ž���������¼��������ӵ��λ�ÿ�ʼ����
+function progressOnClick(event)
+{
+	var progress=document.getElementById("progress");
+	if(event.offsetX) //��ȡ��굱ǰ���λ���뵱ǰλ����ȴ���ƫ����
+	{
+		video.currentTime=video.duration*(event.offsetX/progress.clientWidth); //�趨�������µĲ���λ��
+	}
+	else
+	{
+		video.currentTime=video.duration*(event.clientX/progress.clientWidth);
+	}
+}
+//���½�����״̬
+function updateProgress()
+{
+	var currentPercent=Math.round(Math.floor(video.currentTime)/Math.floor(video.duration)*100,0);//���㵱ǰ����ʱ������Ƶ��ʱ��֮��
+	var progress=document.getElementById("progress");
+	progress.value=currentPercent;
+	showTime.innerHTML=calculateTime(Math.floor(video.currentTime))+"/"+calculateTime(Math.floor(video.duration));//��ʾ����ʱ��
+}
+//����ǰ�����ʱ��ת��Ϊhh:MM:ss�ĸ�ʽ
+function calculateTime(time)
+{
+	var h;
+	var m;
+	var s;
+	h=String(parseInt(time/3600,10));
+	if(h.length==1)
+	{
+		h='0'+h;
+	}
+	m=String(parseInt((time%3600)/60,10));
+	if(m.length==1)
+	{
+		m='0'+m;
+	}
+	s=String(parseInt(time%60),10)
+	if(s.length==1)
+	{
+		s='0'+s;
+	}
+	return h+":"+m+":"+s;
+}
+//������������
+function getValueofvolume()
+{
+	var valuev = document.getElementById("rangeInput").value;
+	var resultv = document.getElementById("resultv");
+	resultv.innerText = valuev/100;
+    video.volume = resultv.innerText;
+}
+
+//ѡ����ٶ�
+function setspeed()
+{
+	video.playbackRate =  sspeed.value;
+	speed=video.playbackRate;
+ }
+</script>
+
+<form>
+		<legend>
+			��ѡ����������
+		</legend>
+		<input id="rangeInput" type="range" min="0" max="100" onChange="getValueofvolume()">
+		<span id="resultv"></span>
+     
+ 	
+</form>
+
+</script>
+</html>
